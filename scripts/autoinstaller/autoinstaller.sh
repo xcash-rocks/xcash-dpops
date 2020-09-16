@@ -135,12 +135,12 @@ function get_xcash_dpops_installation_directory()
 {
   while
     echo -ne "${COLOR_PRINT_YELLOW}Installation Directory, must be in the form of /directory/ (leave empty for default: $HOME/xcash-official/): ${END_COLOR_PRINT}"
-    read -r data    
+    read -r data
     echo -ne "\r"
     echo
     [[ ! $data =~ $regex_XCASH_DPOPS_INSTALLATION_DIR ]]
   do true; done
-  
+
   XCASH_DPOPS_INSTALLATION_DIR=$([ "$data" == "" ] && echo "$XCASH_DPOPS_INSTALLATION_DIR" || echo "$data")
 }
 
@@ -190,7 +190,7 @@ function get_shared_delegate_installation_settings()
   SHARED_DELEGATE=$([ "$data" == "" ] && echo "$SHARED_DELEGATE" || echo "$data")
   echo -ne "\r"
   echo
-  if [ "${SHARED_DELEGATE^^}" == "YES" ]; then    
+  if [ "${SHARED_DELEGATE}" == "YES" ]; then
     while
       echo -ne "${COLOR_PRINT_YELLOW}Shared Delegate Fee (expressed as a percentage, ex: 1 or 1.52): ${END_COLOR_PRINT}"
       read -r DPOPS_FEE
@@ -198,7 +198,7 @@ function get_shared_delegate_installation_settings()
       echo
       [[ ! $DPOPS_FEE =~ $regex_DPOPS_FEE ]]
     do true; done
-    
+
     while
       echo -ne "${COLOR_PRINT_YELLOW}Shared Delegate Minimum Payment Amount (whole number between 10000 and 10000000): ${END_COLOR_PRINT}"
       read -r DPOPS_MINIMUM_AMOUNT
@@ -216,7 +216,7 @@ FIREWALL="$(cat << EOF
 #!/bin/sh
 # iptables script for server
 # if you changed any default ports change them in the firewall as well
- 
+
 # ACCEPT all packets at the top so each packet runs through the firewall rules, then DROP all INPUT and FORWARD if they dont use any of the firewall settings
 iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
@@ -230,7 +230,7 @@ iptables -t raw -F
 iptables -t raw -X
 iptables -F
 iptables -X
- 
+
 # ip table prerouting data (this is where you want to block ddos attacks)
 # Drop all invalid packets
 iptables -t mangle -A PREROUTING -m conntrack --ctstate INVALID -j DROP
@@ -250,13 +250,13 @@ iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
- 
+
 # filter data for INPUT, FORWARD, and OUTPUT
 # Accept any packets coming or going on localhost
 iptables -I INPUT -i lo -j ACCEPT
 # keep already established connections running
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
- 
+
 # block ip spoofing. these are the ranges of local IP address.
 iptables -A INPUT -s 45.76.169.83 -j DROP
 iptables -A INPUT -s 10.12.242.0/24 -j ACCEPT
@@ -273,10 +273,10 @@ iptables -A INPUT -s 0.0.0.0/8 -j DROP
 iptables -A INPUT -d 0.0.0.0/8 -j DROP
 iptables -A INPUT -d 239.255.255.0/24 -j DROP
 iptables -A INPUT -d 255.255.255.255 -j DROP
- 
+
 # block all traffic from ip address (iptables -A INPUT -s ipaddress -j DROP)
 #unblock them using iptables -D INPUT -s ipaddress -j DROP
- 
+
 # Block different attacks
 # block one computer from opening too many connections (100 simultaneous connections) if this gives trouble with post remove this or increase the limit
 # iptables -t filter -I INPUT -p tcp --syn --dport 80 -m connlimit --connlimit-above 100 --connlimit-mask 32 -j DROP
@@ -287,27 +287,27 @@ iptables -A INPUT -m recent --name portscan --rcheck --seconds 86400 -j DROP
 iptables -A FORWARD -m recent --name portscan --rcheck --seconds 86400 -j DROP
 iptables -A INPUT -m recent --name portscan --remove
 iptables -A FORWARD -m recent --name portscan --remove
-iptables -A INPUT   -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP 
+iptables -A INPUT   -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP
 iptables -A FORWARD -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP
- 
+
 # Accept specific packets
 # Accept ICMP
 iptables -A INPUT -p icmp -j ACCEPT
- 
+
 # Accept HTTP
 # iptables -A INPUT -p tcp --dport 80 -j ACCEPT
 
- 
+
 # Accept XCASH
 iptables -A INPUT -p tcp --dport 18280 -j ACCEPT
 iptables -A INPUT -p tcp --dport 18281 -j ACCEPT
 iptables -A INPUT -p tcp --dport 18283 -j ACCEPT
- 
+
 # Allow ssh (allow 10 login attempts in 1 hour from the same ip, if more than ban them for 1 hour)
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -m state --state NEW -m recent --set --name DEFAULT --rsource
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -m state --state NEW -m recent --update --seconds 3600 --hitcount 10 --name DEFAULT --rsource -j DROP
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -j ACCEPT
- 
+
 # DROP all INPUT and FORWARD packets if they have reached this point
 iptables -A INPUT -j DROP
 iptables -A FORWARD -j DROP
@@ -317,7 +317,7 @@ FIREWALL_SHARED_DELEGATES="$(cat << EOF
 #!/bin/sh
 # iptables script for server
 # if you changed any default ports change them in the firewall as well
- 
+
 # ACCEPT all packets at the top so each packet runs through the firewall rules, then DROP all INPUT and FORWARD if they dont use any of the firewall settings
 iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
@@ -331,7 +331,7 @@ iptables -t raw -F
 iptables -t raw -X
 iptables -F
 iptables -X
- 
+
 # ip table prerouting data (this is where you want to block ddos attacks)
 # Drop all invalid packets
 iptables -t mangle -A PREROUTING -m conntrack --ctstate INVALID -j DROP
@@ -351,13 +351,13 @@ iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
- 
+
 # filter data for INPUT, FORWARD, and OUTPUT
 # Accept any packets coming or going on localhost
 iptables -I INPUT -i lo -j ACCEPT
 # keep already established connections running
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
- 
+
 # block ip spoofing. these are the ranges of local IP address.
 iptables -A INPUT -s 45.76.169.83 -j DROP
 iptables -A INPUT -s 10.12.242.0/24 -j ACCEPT
@@ -374,10 +374,10 @@ iptables -A INPUT -s 0.0.0.0/8 -j DROP
 iptables -A INPUT -d 0.0.0.0/8 -j DROP
 iptables -A INPUT -d 239.255.255.0/24 -j DROP
 iptables -A INPUT -d 255.255.255.255 -j DROP
- 
+
 # block all traffic from ip address (iptables -A INPUT -s ipaddress -j DROP)
 #unblock them using iptables -D INPUT -s ipaddress -j DROP
- 
+
 # Block different attacks
 # block one computer from opening too many connections (100 simultaneous connections) if this gives trouble with post remove this or increase the limit
 iptables -t filter -I INPUT -p tcp --syn --dport 80 -m connlimit --connlimit-above 100 --connlimit-mask 32 -j DROP
@@ -388,30 +388,30 @@ iptables -A INPUT -m recent --name portscan --rcheck --seconds 86400 -j DROP
 iptables -A FORWARD -m recent --name portscan --rcheck --seconds 86400 -j DROP
 iptables -A INPUT -m recent --name portscan --remove
 iptables -A FORWARD -m recent --name portscan --remove
-iptables -A INPUT   -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP 
+iptables -A INPUT   -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP
 iptables -A FORWARD -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP
- 
+
 # Accept specific packets
 # Accept ICMP
 iptables -A INPUT -p icmp -j ACCEPT
- 
+
 # Accept HTTP
 iptables -A INPUT -p tcp --dport 80 -j ACCEPT
 
- 
+
 # Accept XCASH
 iptables -A INPUT -p tcp --dport 18280 -j ACCEPT
 iptables -A INPUT -p tcp --dport 18281 -j ACCEPT
 iptables -A INPUT -p tcp --dport 18283 -j ACCEPT
- 
+
 # Allow ssh (allow 10 login attempts in 1 hour from the same ip, if more than ban them for 1 hour)
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -m state --state NEW -m recent --set --name DEFAULT --rsource
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -m state --state NEW -m recent --update --seconds 3600 --hitcount 10 --name DEFAULT --rsource -j DROP
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -j ACCEPT
- 
+
 # Redirect HTTP to port 18283
 iptables -A PREROUTING -t nat -i ${DEFAULT_NETWORK_DEVICE} -p tcp --dport 80 -j REDIRECT --to-ports 18283
- 
+
 # DROP all INPUT and FORWARD packets if they have reached this point
 iptables -A INPUT -j DROP
 iptables -A FORWARD -j DROP
@@ -421,7 +421,7 @@ FIREWALL_TEST="$(cat << EOF
 #!/bin/sh
 # iptables script for server
 # if you changed any default ports change them in the firewall as well
- 
+
 # ACCEPT all packets at the top so each packet runs through the firewall rules, then DROP all INPUT and FORWARD if they dont use any of the firewall settings
 iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
@@ -435,7 +435,7 @@ iptables -t raw -F
 iptables -t raw -X
 iptables -F
 iptables -X
- 
+
 # ip table prerouting data (this is where you want to block ddos attacks)
 # Drop all invalid packets
 iptables -t mangle -A PREROUTING -m conntrack --ctstate INVALID -j DROP
@@ -455,13 +455,13 @@ iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL NONE -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,FIN,PSH,URG -j DROP
 iptables -t mangle -A PREROUTING -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
- 
+
 # filter data for INPUT, FORWARD, and OUTPUT
 # Accept any packets coming or going on localhost
 iptables -I INPUT -i lo -j ACCEPT
 # keep already established connections running
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
- 
+
 # block ip spoofing. these are the ranges of local IP address.
 iptables -A INPUT -s 45.76.169.83 -j DROP
 iptables -A INPUT -s 10.12.242.0/24 -j ACCEPT
@@ -478,10 +478,10 @@ iptables -A INPUT -s 0.0.0.0/8 -j DROP
 iptables -A INPUT -d 0.0.0.0/8 -j DROP
 iptables -A INPUT -d 239.255.255.0/24 -j DROP
 iptables -A INPUT -d 255.255.255.255 -j DROP
- 
+
 # block all traffic from ip address (iptables -A INPUT -s ipaddress -j DROP)
 #unblock them using iptables -D INPUT -s ipaddress -j DROP
- 
+
 # Block different attacks
 # block one computer from opening too many connections (100 simultaneous connections) if this gives trouble with post remove this or increase the limit
 # iptables -t filter -I INPUT -p tcp --syn --dport 80 -m connlimit --connlimit-above 100 --connlimit-mask 32 -j DROP
@@ -492,27 +492,27 @@ iptables -A INPUT -m recent --name portscan --rcheck --seconds 86400 -j DROP
 iptables -A FORWARD -m recent --name portscan --rcheck --seconds 86400 -j DROP
 iptables -A INPUT -m recent --name portscan --remove
 iptables -A FORWARD -m recent --name portscan --remove
-iptables -A INPUT   -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP 
+iptables -A INPUT   -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP
 iptables -A FORWARD -p tcp -m tcp -m multiport --destination-ports 21,25,110,135,139,143,445,1433,3306,3389 -m recent --name portscan --set -j DROP
- 
+
 # Accept specific packets
 # Accept ICMP
 iptables -A INPUT -p icmp -j ACCEPT
- 
+
 # Accept HTTP
 # iptables -A INPUT -p tcp --dport 80 -j ACCEPT
 
- 
+
 # Accept XCASH
 iptables -A INPUT -p tcp -s 147.135.68.247,54.36.63.49,195.201.169.57,195.201.169.59,54.255.223.94,136.243.102.93,78.46.213.190,88.198.90.83,116.202.180.102,116.203.71.44,116.203.71.47,116.203.71.60,116.203.71.36,116.203.71.48,116.203.71.45 --dport 18280 -j ACCEPT
 iptables -A INPUT -p tcp -s 147.135.68.247,54.36.63.49,195.201.169.57,195.201.169.59,54.255.223.94,136.243.102.93,78.46.213.190,88.198.90.83,116.202.180.102,116.203.71.44,116.203.71.47,116.203.71.60,116.203.71.36,116.203.71.48,116.203.71.45 --dport 18281 -j ACCEPT
 iptables -A INPUT -p tcp -s 147.135.68.247,54.36.63.49,195.201.169.57,195.201.169.59,54.255.223.94,136.243.102.93,78.46.213.190,88.198.90.83,116.202.180.102,116.203.71.44,116.203.71.47,116.203.71.60,116.203.71.36,116.203.71.48,116.203.71.45 --dport 18283 -j ACCEPT
- 
+
 # Allow ssh (allow 10 login attempts in 1 hour from the same ip, if more than ban them for 1 hour)
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -m state --state NEW -m recent --set --name DEFAULT --rsource
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -m state --state NEW -m recent --update --seconds 3600 --hitcount 10 --name DEFAULT --rsource -j DROP
 iptables -A INPUT -p tcp -m tcp --dport ${SSH_PORT_NUMBER} -j ACCEPT
- 
+
 # DROP all INPUT and FORWARD packets if they have reached this point
 iptables -A INPUT -j DROP
 iptables -A FORWARD -j DROP
@@ -523,13 +523,13 @@ SYSTEMD_SERVICE_FILE_FIREWALL="$(cat << EOF
 Description=firewall
 Before=network-pre.target
 Wants=network-pre.target
- 
+
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 User=root
 ExecStart=${HOME}/firewall_script.sh
- 
+
 [Install]
 WantedBy=network.target
 EOF
@@ -572,7 +572,7 @@ PIDFile=${XCASH_DPOPS_INSTALLATION_DIR}systemdpid/xcash-daemon.pid
 ExecStart=${XCASH_DIR}build/release/bin/xcashd --data-dir ${XCASH_BLOCKCHAIN_INSTALLATION_DIR} --rpc-bind-ip 0.0.0.0 --p2p-bind-ip 0.0.0.0 --rpc-bind-port 18281 --restricted-rpc --confirm-external-bind --log-file ${XCASH_LOGS_DIR}xcash-daemon-log.txt --max-log-file-size 0 --detach --pidfile ${XCASH_SYSTEMPID_DIR}xcash-daemon.pid
 RuntimeMaxSec=15d
 Restart=always
- 
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -590,7 +590,7 @@ WorkingDirectory=${XCASH_DPOPS_DIR}build
 ExecStart=${XCASH_DPOPS_DIR}build/xcash-dpops --block-verifiers-secret-key ${BLOCK_VERIFIER_SECRET_KEY}
 Restart=always
 RestartSec=5
- 
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -608,7 +608,7 @@ WorkingDirectory=${XCASH_DPOPS_DIR}build
 ExecStart=${XCASH_DPOPS_DIR}build/xcash-dpops --block-verifiers-secret-key ${BLOCK_VERIFIER_SECRET_KEY} --shared-delegates-website --fee ${DPOPS_FEE} --minimum-amount ${DPOPS_MINIMUM_AMOUNT}
 Restart=always
 RestartSec=5
- 
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -628,14 +628,14 @@ SYSTEMD_SERVICE_FILE_XCASH_WALLET="$(cat << EOF
 [Unit]
 Description=X-Cash RPC wallet background process
 After=network.target xcash-daemon.service
- 
+
 [Service]
 Type=simple
 User=${USER}
 ExecStart=${XCASH_DIR}build/release/bin/xcash-wallet-rpc --wallet-file ${XCASH_WALLET_DIR}delegate-wallet --password ${WALLET_PASSWORD} --rpc-bind-port 18285 --confirm-external-bind --daemon-port 18281 --disable-rpc-login --trusted-daemon --log-file ${XCASH_LOGS_DIR}xcash-wallet-rpc.log
 Restart=always
 RestartSec=5
- 
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -713,9 +713,9 @@ function get_block_verifier_key_settings()
     fi
     echo -ne "\r"
     echo
-    [ ! ${BLOCK_VERIFIER_KEY_SETTINGS^^} == "I" ] && [ ! ${BLOCK_VERIFIER_KEY_SETTINGS^^} == "C" ]
+    [ ! ${BLOCK_VERIFIER_KEY_SETTINGS} == "I" ] && [ ! ${BLOCK_VERIFIER_KEY_SETTINGS} == "C" ]
   do true; done
-  if [ ${BLOCK_VERIFIER_KEY_SETTINGS^^} == "I" ]; then
+  if [ ${BLOCK_VERIFIER_KEY_SETTINGS} == "I" ]; then
     while
       echo -ne "${COLOR_PRINT_YELLOW}Enter Block Verifiers Secret Key: ${END_COLOR_PRINT}"
       read -r BLOCK_VERIFIER_SECRET_KEY
@@ -763,7 +763,7 @@ function print_installation_settings()
     seconds=$((seconds-1))
     sleep 1
     echo -ne "\r"
-  done 
+  done
   echo -ne "${COLOR_PRINT_GREEN}${INSTALLATION_TYPE} will start in 0 seconds, press Ctrl + C to cancel!${END_COLOR_PRINT}"
   echo
   echo
@@ -780,7 +780,7 @@ function installation_settings()
   echo
   get_password
   get_installation_settings
-  if [ "$INSTALLATION_TYPE_SETTINGS" -eq "1" ]; then 
+  if [ "$INSTALLATION_TYPE_SETTINGS" -eq "1" ]; then
     get_xcash_dpops_installation_directory
     get_xcash_blockchain_xcash_dpops_installation_directory
     get_mongodb_installation_directory
@@ -798,7 +798,7 @@ function installation_settings()
     fi
     print_installation_settings
   fi
-  if [ "$INSTALLATION_TYPE_SETTINGS" -eq "11" ]; then 
+  if [ "$INSTALLATION_TYPE_SETTINGS" -eq "11" ]; then
     echo
     echo -e "${COLOR_PRINT_RED}WARNING: Old wallet, old block verifier key and old settings (service files)${END_COLOR_PRINT}"
     echo -e "${COLOR_PRINT_RED}will be overwritten if already existent! Please make a backup if required!${END_COLOR_PRINT}"
@@ -835,9 +835,9 @@ function get_current_xcash_wallet_data()
 
   screen -dmS XCASH_RPC_Wallet "${XCASH_DIR}"build/release/bin/xcash-wallet-rpc --wallet-file "${XCASH_WALLET_DIR}"delegate-wallet --password "${WALLET_PASSWORD}" --rpc-bind-port 18288 --confirm-external-bind --disable-rpc-login --trusted-daemon --log-file "${XCASH_LOGS_DIR}"xcash-wallet-rpc.log
   sleep 10s
-  
+
    while
-    data=$(curl -s -X POST http://127.0.0.1:18288/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_address"}' -H 'Content-Type: application/json') 
+    data=$(curl -s -X POST http://127.0.0.1:18288/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_address"}' -H 'Content-Type: application/json')
     sleep 10s
     [[ "$data" == "" ]]
   do true; done
@@ -854,10 +854,10 @@ function get_current_xcash_wallet_data()
   # add the public address and block verifiers secret key to the XCASH_Daemon systemd service file
   PUBLIC_ADDRESS=${PUBLIC_ADDRESS%?}
   sed_services "s/xcash-core\/build\/release\/bin\/xcashd/xcash-core\/build\/release\/bin\/xcashd --xcash-dpops-delegates-public-address $PUBLIC_ADDRESS --xcash-dpops-delegates-secret-key $BLOCK_VERIFIER_SECRET_KEY/g" /lib/systemd/system/xcash-daemon.service
-  
+
   systemctl stop xcash-daemon &>/dev/null
   sleep 30s
-  
+
   echo -ne "\r${COLOR_PRINT_GREEN}Getting Current X-CASH Wallet Data${END_COLOR_PRINT}"
   echo
   echo
@@ -918,12 +918,12 @@ function check_if_upgrade_solo_delegate_and_shared_delegate()
   BLOCK_VERIFIER_SECRET_KEY=$(echo $BLOCK_VERIFIER_SECRET_KEY | awk -F '--block-verifiers-secret-key' '{print $2}')
   BLOCK_VERIFIER_SECRET_KEY=${BLOCK_VERIFIER_SECRET_KEY:1:$BLOCK_VERIFIERS_SECRET_KEY_LENGTH}
 
-  if [ "${SHARED_DELEGATE^^}" == "YES" ]; then
+  if [ "${SHARED_DELEGATE}" == "YES" ]; then
     echo -ne "The current delegate setting is shared delegate. If you would like to change the settings to a solo delegate type \"YES\" otherwise press enter:"
     read -r data
     echo -ne "\r"
     echo
-    if [ "${data^^}" == "YES" ]; then
+    if [ "${data}" == "YES" ]; then
       SHARED_DELEGATE="NO"
       uninstall_shared_delegates_website
       update_systemd_service_files
@@ -942,7 +942,7 @@ function check_if_upgrade_solo_delegate_and_shared_delegate()
     read -r data
     echo -ne "\r"
     echo
-    if [ "${data^^}" == "YES" ]; then
+    if [ "${data}" == "YES" ]; then
       SHARED_DELEGATE="YES"
 
       while
@@ -952,16 +952,16 @@ function check_if_upgrade_solo_delegate_and_shared_delegate()
         echo
         [[ ! $DPOPS_FEE =~ $regex_DPOPS_FEE ]]
       do true; done
-    
+
       while
         echo -ne "${COLOR_PRINT_YELLOW}Shared Delegate Minimum Payment Amount, minimum is 10K, maximum is 10M (ex: 10000 in whole numbers and not atomic units etc): ${END_COLOR_PRINT}"
         read -r DPOPS_MINIMUM_AMOUNT
         echo -ne "\r"
         echo
         [[ ! $DPOPS_MINIMUM_AMOUNT =~ $regex_DPOPS_MINIMUM_AMOUNT ]]
-      do true; done  
+      do true; done
 
-      NODEJS_DIR=${XCASH_DPOPS_INSTALLATION_DIR}${NODEJS_LATEST_VERSION}/ 
+      NODEJS_DIR=${XCASH_DPOPS_INSTALLATION_DIR}${NODEJS_LATEST_VERSION}/
       echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
       echo -e "${COLOR_PRINT_GREEN}            Installing Shared Delegate Website${END_COLOR_PRINT}"
       echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
@@ -988,7 +988,7 @@ function check_if_upgrade_solo_delegate_and_shared_delegate()
 
 function check_if_remove_shared_delegate_configure_install()
 {
-  if [ "${SHARED_DELEGATE^^}" == "NO" ]; then
+  if [ "${SHARED_DELEGATE}" == "NO" ]; then
     echo -ne "Installation configured as Solo delegate. Removing all the preinstalled Shared Delegate website"
     echo
     uninstall_shared_delegates_website
@@ -1007,11 +1007,11 @@ function check_if_remove_shared_delegate_configure_install()
 
 
 function check_ubuntu_version()
-{   
+{
     command -v lsb_release > /dev/null 2>&1 ||
     {
         echo -e "${COLOR_PRINT_RED}FAIL${END_COLOR_PRINT}"
-        echo 
+        echo
         echo -e "${COLOR_PRINT_RED}############################################################${END_COLOR_PRINT}"
         echo -e "${COLOR_PRINT_RED}           !!! CANNOT CHECK YOUR UBUNTU VERSION !!!${END_COLOR_PRINT}"
         echo -e "${COLOR_PRINT_RED}############################################################${END_COLOR_PRINT}"
@@ -1022,7 +1022,7 @@ function check_ubuntu_version()
     UBUNTU_VERSION=$(lsb_release -r | awk '{print $2}' | sed s"|\.||g")
     if [ "$UBUNTU_VERSION" -lt 1804 ]; then
       echo -e "${COLOR_PRINT_RED}FAIL${END_COLOR_PRINT}"
-      echo 
+      echo
       echo -e "${COLOR_PRINT_RED}############################################################${END_COLOR_PRINT}"
       echo -e "${COLOR_PRINT_RED}          !!!  YOUR UBUNTU VERSION IS NOT SUPPORTED !!!${END_COLOR_PRINT}"
       echo -e "${COLOR_PRINT_RED}############################################################${END_COLOR_PRINT}"
@@ -1041,7 +1041,7 @@ function update_packages_list()
             2 ) j="|" ;;
             3 ) j="/" ;;
         esac
-        echo && echo -en "\r${COLOR_PRINT_RED}[$j] Waiting for other package manager to finish...${END_COLOR_PRINT}" 
+        echo && echo -en "\r${COLOR_PRINT_RED}[$j] Waiting for other package manager to finish...${END_COLOR_PRINT}"
         sleep 0.25
         ((i=i+1))
     done
@@ -1061,7 +1061,7 @@ function install_packages()
             2 ) j="|" ;;
             3 ) j="/" ;;
         esac
-        echo && echo -en "\r${COLOR_PRINT_RED}[$j] Waiting for other package manager to finish...${END_COLOR_PRINT}" 
+        echo && echo -en "\r${COLOR_PRINT_RED}[$j] Waiting for other package manager to finish...${END_COLOR_PRINT}"
         sleep 0.25
         ((i=i+1))
     done
@@ -1143,7 +1143,7 @@ function create_directories()
     sudo mkdir -p "${MONGODB_INSTALLATION_DIR}"
     sudo chmod 770 "${MONGODB_INSTALLATION_DIR}"
     sudo chown "$USER" "${MONGODB_INSTALLATION_DIR}"
-  fi 
+  fi
   if [ ! -d "$XCASH_WALLET_DIR" ]; then
     mkdir -p "${XCASH_WALLET_DIR}"
   fi
@@ -1170,7 +1170,7 @@ function create_systemd_service_files()
   sudo bash -c "echo '${SYSTEMD_SERVICE_FILE_XCASH_DAEMON}' > /lib/systemd/system/xcash-daemon.service"
   sudo bash -c "echo '${SYSTEMD_TIMER_FILE_XCASH_DPOPS}' > /lib/systemd/system/xcash-dpops.timer"
 
-  if [ ! "${SHARED_DELEGATE^^}" == "YES" ]; then
+  if [ ! "${SHARED_DELEGATE}" == "YES" ]; then
     sudo bash -c "echo '${SYSTEMD_SERVICE_FILE_XCASH_DPOPS_SOLO_DELEGATE}' > /lib/systemd/system/xcash-dpops.service"
   else
     sudo bash -c "echo '${SYSTEMD_SERVICE_FILE_XCASH_DPOPS_SHARED_DELEGATE}' > /lib/systemd/system/xcash-dpops.service"
@@ -1189,7 +1189,7 @@ function install_mongodb()
   wget -q ${MONGODB_URL}
   tar -xf mongodb-linux-x86_64-*.tgz &>/dev/null
   sudo rm mongodb-linux-x86_64-*.tgz &>/dev/null
-  echo -ne "\nexport PATH=${MONGODB_DIR}bin:" >> "${HOME}"/.profile 
+  echo -ne "\nexport PATH=${MONGODB_DIR}bin:" >> "${HOME}"/.profile
   echo -ne '$PATH' >> "${HOME}"/.profile
   . "${HOME}"/.profile
   echo -ne "\r${COLOR_PRINT_GREEN}Installing MongoDB${END_COLOR_PRINT}"
@@ -1259,7 +1259,7 @@ function install_firewall()
   echo -ne "${COLOR_PRINT_YELLOW}Installing The Firewall${END_COLOR_PRINT}"
   # Reinstall iptables (solves some issues with some VPS)
   sudo apt-get install --reinstall iptables &>/dev/null
-  if [ "${SHARED_DELEGATE^^}" == "YES" ]; then
+  if [ "${SHARED_DELEGATE}" == "YES" ]; then
     echo "$FIREWALL_SHARED_DELEGATES" > ${HOME}/firewall_script.sh
   else
     echo "$FIREWALL" > ${HOME}/firewall_script.sh
@@ -1285,7 +1285,7 @@ function install_xcash_dpops()
   build_xcash_dpops
 
   # Create the block verifier key if they choose to create a block verifier key
-  if [ "${BLOCK_VERIFIER_KEY_SETTINGS^^}" == "C" ]; then
+  if [ "${BLOCK_VERIFIER_KEY_SETTINGS}" == "C" ]; then
     create_block_verifier_key
   fi
 
@@ -1307,7 +1307,7 @@ function configure_xcash_dpops()
   echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
 
   # Create the block verifier key if they choose to create a block verifier key
-  if [ "${BLOCK_VERIFIER_KEY_SETTINGS^^}" == "C" ]; then
+  if [ "${BLOCK_VERIFIER_KEY_SETTINGS}" == "C" ]; then
     create_block_verifier_key
   fi
   update_systemd_service_files
@@ -1324,18 +1324,18 @@ function sync_xcash_wallet()
 
   systemctl start xcash-daemon &>/dev/null
   sleep 30s
-  
+
   screen -dmS XCASH_RPC_Wallet "${XCASH_DIR}"build/release/bin/xcash-wallet-rpc --wallet-file "${XCASH_WALLET_DIR}"delegate-wallet --password "${WALLET_PASSWORD}" --rpc-bind-port 18288 --confirm-external-bind --disable-rpc-login --trusted-daemon --log-file "${XCASH_LOGS_DIR}"xcash-wallet-rpc.log
-  
+
    while
-    data=$(curl -s -X POST http://127.0.0.1:18288/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_address"}' -H 'Content-Type: application/json') 
+    data=$(curl -s -X POST http://127.0.0.1:18288/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_address"}' -H 'Content-Type: application/json')
     sleep 10s
     [[ "$data" == "" ]]
   do true; done
 
   curl -s -X POST http://127.0.0.1:18288/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"stop_wallet"}' -H 'Content-Type: application/json' &>/dev/null
   sleep 10s
-  
+
   systemctl stop xcash-daemon &>/dev/null
   sleep 30s
 }
@@ -1345,15 +1345,15 @@ function create_xcash_wallet()
   echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
   echo -e "${COLOR_PRINT_GREEN}      Creating X-CASH Wallet (This Might Take A While)  ${END_COLOR_PRINT}"
   echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
-  
+
   systemctl start xcash-daemon &>/dev/null
   sleep 30s
-  
+
   echo "exit" | "${XCASH_DIR}"build/release/bin/xcash-wallet-cli --generate-new-wallet "${XCASH_DPOPS_INSTALLATION_DIR}"xcash-wallets/delegate-wallet --password "${WALLET_PASSWORD}" --mnemonic-language English --restore-height 0 --trusted-daemon &>/dev/null
-  
+
   systemctl stop xcash-daemon &>/dev/null
   sleep 30s
-  
+
   echo
   echo
 }
@@ -1363,15 +1363,15 @@ function import_xcash_wallet()
   echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
   echo -e "${COLOR_PRINT_GREEN}     Importing X-CASH Wallet (This Might Take A While) ${END_COLOR_PRINT}"
   echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
-  
+
   systemctl start xcash-daemon &>/dev/null
   sleep 30s
-  
+
   (echo -ne "\n"; echo "${WALLET_PASSWORD}"; echo "exit") | "${XCASH_DIR}"build/release/bin/xcash-wallet-cli --restore-deterministic-wallet --electrum-seed "${WALLET_SEED}" --generate-new-wallet "${XCASH_DPOPS_INSTALLATION_DIR}"xcash-wallets/delegate-wallet --password "${WALLET_PASSWORD}" --mnemonic-language English --restore-height 0 --trusted-daemon &>/dev/null
-  
+
   systemctl stop xcash-daemon &>/dev/null
   sleep 30s
-  
+
   echo
   echo
 }
@@ -1392,7 +1392,7 @@ function install_nodejs()
   wget -q ${NODEJS_URL}
   tar -xf node*.tar.xz &>/dev/null
   sudo rm node*.tar.xz &>/dev/null
-  echo -ne "\nexport PATH=${NODEJS_DIR}bin:" >> "${HOME}"/.profile 
+  echo -ne "\nexport PATH=${NODEJS_DIR}bin:" >> "${HOME}"/.profile
   echo -ne '$PATH' >> "${HOME}"/.profile
   . "${HOME}"/.profile
   echo -ne "\r${COLOR_PRINT_GREEN}Installing Node.js${END_COLOR_PRINT}"
@@ -1454,9 +1454,9 @@ function build_shared_delegates_website()
   for f in *.js; do uglifyjs "$f" --compress --mangle --output "{$f}min"; rm "$f"; mv "{$f}min" "$f"; done
   if [ -d "$XCASH_DPOPS_SHARED_DELEGATE_FOLDER_DIR" ]; then
     sudo rm -r "${XCASH_DPOPS_SHARED_DELEGATE_FOLDER_DIR}"
-  fi 
+  fi
   cd ../
-  cp -a dist "${XCASH_DPOPS_SHARED_DELEGATE_FOLDER_DIR}" 
+  cp -a dist "${XCASH_DPOPS_SHARED_DELEGATE_FOLDER_DIR}"
   echo -ne "\r${COLOR_PRINT_GREEN}Building shared delegates website${END_COLOR_PRINT}"
   echo
 }
@@ -1551,7 +1551,7 @@ function update_packages()
             2 ) j="|" ;;
             3 ) j="/" ;;
         esac
-        echo && echo -en "\r${COLOR_PRINT_RED}[$j] Waiting for other package manager to finish...${END_COLOR_PRINT}" 
+        echo && echo -en "\r${COLOR_PRINT_RED}[$j] Waiting for other package manager to finish...${END_COLOR_PRINT}"
         sleep 0.25
         ((i=i+1))
     done
@@ -1583,7 +1583,7 @@ function update_xcash()
       else
           make release -j $((CPU_THREADS / 2)) &>/dev/null
       fi
-    fi 
+    fi
   fi
   echo -ne "\r${COLOR_PRINT_GREEN}Updating X-CASH (This Might Take A While)${END_COLOR_PRINT}"
   echo
@@ -1636,7 +1636,7 @@ function update_shared_delegates_website()
     for f in *.js; do uglifyjs "$f" --compress --mangle --output "{$f}min"; rm "$f"; mv "{$f}min" "$f"; done
     if [ -d "$XCASH_DPOPS_SHARED_DELEGATE_FOLDER_DIR" ]; then
       sudo rm -r "${XCASH_DPOPS_SHARED_DELEGATE_FOLDER_DIR}"
-    fi 
+    fi
     cd ../
     cp -a dist "${XCASH_DPOPS_SHARED_DELEGATE_FOLDER_DIR}"
   fi
@@ -1647,7 +1647,7 @@ function update_shared_delegates_website()
 function update_mongodb()
 {
   echo -ne "${COLOR_PRINT_YELLOW}Updating MongoDB${END_COLOR_PRINT}"
-  sudo rm -r "${MONGODB_DIR}"  
+  sudo rm -r "${MONGODB_DIR}"
   cd "${XCASH_DPOPS_INSTALLATION_DIR}"
   wget -q ${MONGODB_URL}
   tar -xf mongodb-linux-x86_64-*.tgz &>/dev/null
@@ -1658,7 +1658,7 @@ function update_mongodb()
   sudo systemctl daemon-reload
   sudo sed '/mongodb-linux-x86_64-ubuntu1804-/d' -i "${HOME}"/.profile
   sudo sed '/^[[:space:]]*$/d' -i "${HOME}"/.profile
-  echo -ne "\nexport PATH=${MONGODB_DIR}bin:" >> "${HOME}"/.profile 
+  echo -ne "\nexport PATH=${MONGODB_DIR}bin:" >> "${HOME}"/.profile
   echo -ne '$PATH' >> "${HOME}"/.profile
   sudo sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba' -i "${HOME}"/.profile
   . "${HOME}"/.profile
@@ -1689,7 +1689,7 @@ function update_mongoc_driver()
 function update_nodejs()
 {
   echo -ne "${COLOR_PRINT_YELLOW}Updating NodeJS${END_COLOR_PRINT}"
-  sudo rm -r "${NODEJS_DIR}"  
+  sudo rm -r "${NODEJS_DIR}"
   cd "${XCASH_DPOPS_INSTALLATION_DIR}"
   wget -q ${NODEJS_URL}
   tar -xf node*.tar.xz &>/dev/null
@@ -1698,7 +1698,7 @@ function update_nodejs()
   sudo sed '/node-v/d' -i "${HOME}"/.profile
   sudo sed '/PATH=\/bin:/d' -i "${HOME}"/.profile
   sudo sed '/^[[:space:]]*$/d' -i "${HOME}"/.profile
-  echo -ne "\nexport PATH=${NODEJS_DIR}bin:" >> "${HOME}"/.profile 
+  echo -ne "\nexport PATH=${NODEJS_DIR}bin:" >> "${HOME}"/.profile
   echo -ne '$PATH' >> "${HOME}"/.profile
   sudo sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba' -i "${HOME}"/.profile
   . "${HOME}"/.profile
@@ -1723,7 +1723,7 @@ function uninstall_packages()
             2 ) j="|" ;;
             3 ) j="/" ;;
         esac
-        echo && echo -en "\r${COLOR_PRINT_RED}[$j] Waiting for other package manager to finish...${END_COLOR_PRINT}" 
+        echo && echo -en "\r${COLOR_PRINT_RED}[$j] Waiting for other package manager to finish...${END_COLOR_PRINT}"
         sleep 0.25
         ((i=i+1))
     done
@@ -1800,7 +1800,7 @@ function install()
 
   # Update the package list
   update_packages_list
- 
+
   # Install packages
   install_packages
 
@@ -1814,12 +1814,12 @@ function install()
   install_xcash_dpops
 
   # Install shared delegates website
-  if [ "${SHARED_DELEGATE^^}" == "YES" ]; then
+  if [ "${SHARED_DELEGATE}" == "YES" ]; then
     install_shared_delegates_website
   fi
 
   # Create or import the wallet
-  if [ "${WALLET_SETTINGS^^}" == "YES" ]; then
+  if [ "${WALLET_SETTINGS}" == "YES" ]; then
     create_xcash_wallet
   else
     import_xcash_wallet
@@ -1832,20 +1832,20 @@ function install()
   get_current_xcash_wallet_data
 
   # import the wallet if they created the wallet before. This should fix any 0 balance error
-  if [ "${WALLET_SETTINGS^^}" == "YES" ]; then
+  if [ "${WALLET_SETTINGS}" == "YES" ]; then
     echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
     echo -e "${COLOR_PRINT_GREEN}     Importing X-CASH Wallet (This Might Take A While) ${END_COLOR_PRINT}"
     echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
     rm "${XCASH_DPOPS_INSTALLATION_DIR}"xcash-wallets/delegate-wallet*
-    
+
     systemctl start xcash-daemon &>/dev/null
     sleep 30s
-  
+
     (echo -ne "\n"; echo "${WALLET_PASSWORD}"; echo "exit") | "${XCASH_DIR}"build/release/bin/xcash-wallet-cli --restore-deterministic-wallet --electrum-seed "${MNEMONIC_SEED}" --generate-new-wallet "${XCASH_DPOPS_INSTALLATION_DIR}"xcash-wallets/delegate-wallet --password "${WALLET_PASSWORD}" --mnemonic-language English --restore-height 0 --trusted-daemon &>/dev/null
-  
+
     systemctl stop xcash-daemon &>/dev/null
     sleep 30s
-  
+
     echo
     echo
   fi
@@ -1873,20 +1873,20 @@ function install()
       create_swap_file
     fi
   fi
-  
+
   # Create xcash wallet log symlink to old location
   touch "${XCASH_LOGS_DIR}xcash-wallet-rpc.log" && rm -f "${XCASH_DIR}build/release/bin/xcash-wallet-rpc.log" && ln -s "${XCASH_LOGS_DIR}xcash-wallet-rpc.log" "${XCASH_DIR}build/release/bin/xcash-wallet-rpc.log"
- 
+
 
   # Start the systemd service files
   start_systemd_service_files
 
 
-  if [ "${AUTOSTART_SETTINGS^^}" == "YES" ]; then
+  if [ "${AUTOSTART_SETTINGS}" == "YES" ]; then
     enable_service_files_at_startup
   fi
 
-  # Display X-CASH current wallet data  
+  # Display X-CASH current wallet data
   echo
   echo
   echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
@@ -1911,7 +1911,7 @@ function configure()
   # Stop service files
   stop_systemd_service_files
 
-  # Remove shared website if solo 
+  # Remove shared website if solo
   check_if_remove_shared_delegate_configure_install
 
   # Ask if use already present blockchain or use bootstrap file
@@ -1928,7 +1928,7 @@ function configure()
   configure_xcash_dpops
 
   # Create or import the wallet
-  if [ "${WALLET_SETTINGS^^}" == "YES" ]; then
+  if [ "${WALLET_SETTINGS}" == "YES" ]; then
     create_xcash_wallet
   else
     import_xcash_wallet
@@ -1941,20 +1941,20 @@ function configure()
   get_current_xcash_wallet_data
 
   # import the wallet if they created the wallet before. This should fix any 0 balance error
-  if [ "${WALLET_SETTINGS^^}" == "YES" ]; then
+  if [ "${WALLET_SETTINGS}" == "YES" ]; then
     echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
     echo -e "${COLOR_PRINT_GREEN}     Importing X-CASH Wallet (This Might Take A While) ${END_COLOR_PRINT}"
     echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
     rm "${XCASH_DPOPS_INSTALLATION_DIR}"xcash-wallets/delegate-wallet*
-    
+
     systemctl start xcash-daemon &>/dev/null
     sleep 30s
-  
+
     (echo -ne "\n"; echo "${WALLET_PASSWORD}"; echo "exit") | "${XCASH_DIR}"build/release/bin/xcash-wallet-cli --restore-deterministic-wallet --electrum-seed "${MNEMONIC_SEED}" --generate-new-wallet "${XCASH_DPOPS_INSTALLATION_DIR}"xcash-wallets/delegate-wallet --password "${WALLET_PASSWORD}" --mnemonic-language English --restore-height 0 --trusted-daemon &>/dev/null
-    
+
     systemctl stop xcash-daemon &>/dev/null
     sleep 30s
-    
+
     echo
     echo
   fi
@@ -1962,11 +1962,11 @@ function configure()
   # Start the systemd service files
   start_systemd_service_files
 
-  if [ "${AUTOSTART_SETTINGS^^}" == "YES" ]; then
+  if [ "${AUTOSTART_SETTINGS}" == "YES" ]; then
     enable_service_files_at_startup
   fi
 
-  # Display X-CASH current wallet data  
+  # Display X-CASH current wallet data
   echo
   echo
   echo -e "${COLOR_PRINT_GREEN}############################################################${END_COLOR_PRINT}"
@@ -2007,7 +2007,7 @@ function update()
   # Update all repositories
   update_xcash
   update_xcash_dpops
-  if [ "${SHARED_DELEGATE^^}" == "YES" ]; then
+  if [ "${SHARED_DELEGATE}" == "YES" ]; then
     update_shared_delegates_website
   fi
 
@@ -2022,7 +2022,7 @@ function update()
   else
     echo -e "${COLOR_PRINT_GREEN}Mongo C Driver Is Already Up To Date${END_COLOR_PRINT}"
   fi
-  if [ "${SHARED_DELEGATE^^}" == "YES" ]; then
+  if [ "${SHARED_DELEGATE}" == "YES" ]; then
     if [ ! "$NODEJS_CURRENT_VERSION" == "$NODEJS_LATEST_VERSION" ]; then
       update_nodejs
       install_npm_global_packages
@@ -2031,7 +2031,7 @@ function update()
     fi
     update_npm
   fi
-  
+
   # Create xcash wallet log hardlink
   touch "${XCASH_LOGS_DIR}xcash-wallet-rpc.log" && rm -f "${XCASH_DIR}build/release/bin/xcash-wallet-rpc.log" && ln -s "${XCASH_LOGS_DIR}xcash-wallet-rpc.log" "${XCASH_DIR}build/release/bin/xcash-wallet-rpc.log"
 
@@ -2072,7 +2072,7 @@ function uninstall()
   sleep 10s
   echo -ne "\r${COLOR_PRINT_GREEN}Shutting Down X-CASH Wallet Systemd Service File and Restarting XCASH Daemon Systemd Service File${END_COLOR_PRINT}"
   echo
-  
+
   # get the block verifiers secret key from the systemd service file
   BLOCK_VERIFIER_SECRET_KEY=$(cat /lib/systemd/system/xcash-dpops.service)
   BLOCK_VERIFIER_SECRET_KEY=$(echo $BLOCK_VERIFIER_SECRET_KEY | awk -F '--block-verifiers-secret-key' '{print $2}')
@@ -2091,7 +2091,7 @@ function uninstall()
   # Uninstall Systemd Service Files
   uninstall_systemd_service_files
 
-  # Uninstall the Mongo C Driver  
+  # Uninstall the Mongo C Driver
   echo -ne "${COLOR_PRINT_YELLOW}Uninstalling Mongo C Driver${END_COLOR_PRINT}"
   sudo /usr/local/share/mongo-c-driver/uninstall.sh  &>/dev/null
   sudo ldconfig
@@ -2128,8 +2128,8 @@ function uninstall()
   echo
   echo
   echo -e "${COLOR_PRINT_YELLOW}Make sure to run source ~/.profile in your terminal${END_COLOR_PRINT}"
-  
-  # Display X-CASH current wallet data  
+
+  # Display X-CASH current wallet data
   echo
   echo
   echo -e "${CURRENT_XCASH_WALLET_INFORMATION}"
@@ -2313,7 +2313,7 @@ function edit_shared_delegate_settings()
       echo
       [[ ! $DPOPS_FEE =~ $regex_DPOPS_FEE ]]
     do true; done
-    
+
     while
       echo -ne "${COLOR_PRINT_YELLOW}Shared Delegate Minimum Payment Amount, minimum is 10K, maximum is 10M (ex: 10000 in whole numbers and not atomic units etc): ${END_COLOR_PRINT}"
       read -r DPOPS_MINIMUM_AMOUNT
@@ -2361,7 +2361,7 @@ function register_update_delegate()
     BLOCK_VERIFIER_SECRET_KEY=$(echo $BLOCK_VERIFIER_SECRET_KEY | awk -F '--block-verifiers-secret-key' '{print $2}')
     BLOCK_VERIFIER_SECRET_KEY=${BLOCK_VERIFIER_SECRET_KEY:1:$BLOCK_VERIFIERS_SECRET_KEY_LENGTH}
     BLOCK_VERIFIER_PUBLIC_KEY="${BLOCK_VERIFIER_SECRET_KEY: -${BLOCK_VERIFIERS_PUBLIC_KEY_LENGTH}}"
-    # Run the wallet passing the registration information  
+    # Run the wallet passing the registration information
     (echo "delegate_register ${XCASH_DELEGATE_NAME} ${XCASH_DELEGATE_DOMAIN} ${BLOCK_VERIFIER_PUBLIC_KEY}"; echo "exit" ) | ${XCASH_DIR}build/release/bin/xcash-wallet-cli --wallet-file ${XCASH_WALLET_DIR}delegate-wallet --password ${WALLET_PASSWORD} --trusted-daemon --log-file ${XCASH_LOGS_DIR}xcash-wallet-rpc.log
     # Start the rpc wallet service
     sudo systemctl start xcash-rpc-wallet
@@ -2420,7 +2420,7 @@ function register_update_delegate()
     if [ ! "$UPDATE_SERVER_SPECS" == "" ]; then COMMAND_STRING="${COMMAND_STRING}delegate_update server_specs ${UPDATE_SERVER_SPECS}\n"; fi
     # Stop the rpc wallet service
     sudo systemctl stop xcash-rpc-wallet
-    # Run the wallet passing the registration information  
+    # Run the wallet passing the registration information
     (echo -ne ${COMMAND_STRING}; echo "exit" ) | ${XCASH_DIR}build/release/bin/xcash-wallet-cli --wallet-file ${XCASH_WALLET_DIR}delegate-wallet --password ${WALLET_PASSWORD} --trusted-daemon --log-file ${XCASH_LOGS_DIR}xcash-wallet-rpc.log
     # Start the rpc wallet service
     sudo systemctl start xcash-rpc-wallet
@@ -2483,4 +2483,3 @@ elif [ "$INSTALLATION_TYPE_SETTINGS" -eq "13" ]; then
 elif [ "$INSTALLATION_TYPE_SETTINGS" -eq "14" ]; then
   install_firewall_script_shared_delegates
 fi
-
